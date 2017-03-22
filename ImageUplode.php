@@ -1,4 +1,5 @@
 <?php
+namespace ImageUplode;
 
 /**
  * @auth  Johnny  2017-02-21
