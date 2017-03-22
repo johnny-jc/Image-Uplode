@@ -96,7 +96,7 @@ class Upload
      * @param 其中：name 为文件名，上传成功时是上传到服务器上的文件名，上传失败则是本地的文件名
      *              dir  为服务器上存放该附件的物理路径，上传失败不存在该值
      *              size 为附件大小，上传失败不存在该值
-     *              flag 为状态标识，1表示成功，-1表示文件类型不允许，-2表示文件大小超出
+     *              msg 为状态标识，1表示成功，-1表示文件类型不允许，-2表示文件大小超出
      * @return array   执行文件上传，处理完返回一个包含上传成功或失败的文件信息数组，
      */
     public function execute()
@@ -114,7 +114,7 @@ class Upload
             //文件类型不允许
             if (!in_array($fileext, $this->allow_types)) {
                 $files['name'] = $_FILES[$field]['name'];
-                $files['flag'] = -1;
+                $files['msg'] = -1;
                 continue;
             }
 
@@ -122,7 +122,7 @@ class Upload
             if ($filesize > $this->maxsize) {
                 $files['name'] = $_FILES[$field]['name'];
                 $files['name'] = $filesize;
-                $files['flag'] = -2;
+                $files['msg'] = -2;
                 continue;
             }
 
@@ -134,7 +134,7 @@ class Upload
             if (is_uploaded_file($_FILES[$field]['tmp_name'])) {
                 move_uploaded_file($_FILES[$field]['tmp_name'], $filedir . $filename);
                 @unlink($_FILES[$field]['tmp_name']);
-                $files['flag'] = 1;
+                $files['msg'] = 1;
 
                 //对图片进行加水印和生成缩略图,这里演示只支持jpg和png(gif生成的话会没了帧的)
                 if (in_array($fileext, array('jpg', 'png'))) {
