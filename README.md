@@ -23,7 +23,7 @@ $up->setDir($path);
  * @param 图片缩略图设置 ，如果不生成缩略图则不用设置
  * @param int $width     缩略图宽度
  * @param int $height    缩略图高度
- */
+*/
  
 $up->setThumb(600,600,300,300,50,50);
 
