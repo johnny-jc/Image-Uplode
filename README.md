@@ -9,18 +9,21 @@ PHP 图片上传DEMO
  * @param string $time      自定义上传时间
  */
 $up->upload();
+
 /**
  * @param $basedir          基目录，必须为物理路径
  * @param string $filedir   自定义子目录，可用参数{y}、{m}、{d}
  * @return string           设置并创建文件具体存放的目录
  */
 $up->setDir($path);
+
 /**
  * @param 图片缩略图设置 ，如果不生成缩略图则不用设置
  * @param int $width     缩略图宽度
  * @param int $height    缩略图高度
  */
 $up->setThumb(600,600,300,300,50,50);
+
 /**
  * @param 其中：name 为文件名，上传成功时是上传到服务器上的文件名，上传失败则是本地的文件名
  *              dir  为服务器上存放该附件的物理路径，上传失败不存在该值
