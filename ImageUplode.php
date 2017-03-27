@@ -1,8 +1,5 @@
 <?php
-namespace backAdmin\components;
-
-use Yii;
-use yii\base\Component;
+namespace app\components;
 
 /**
  * @auth  Johnny  2017-02-21
@@ -12,7 +9,7 @@ use yii\base\Component;
  * @param 图片水印 ：             方法 setWatermark
  * @param 图片对应文件及图片删除     方法 delImgDir
  */
-class UplodeImg extends Component
+class UplodeImg
 {
     public $dir;            // 附件存放物理目录
     public $time;           // 自定义文件上传时间
