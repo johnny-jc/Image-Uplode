@@ -1,15 +1,18 @@
 <?php
-namespace ImageUplode;
+namespace backAdmin\components;
+
+use Yii;
+use yii\base\Component;
 
 /**
  * @auth  Johnny  2017-02-21
  * @param 上传图片公告类
  * @param 功能介绍 ：             方法 setThumb(图片宽度|高度)
- * @param 图片上传地址 ：         方法 setDir
+ * @param 图片上传地址 ：          方法 setDir
  * @param 图片水印 ：             方法 setWatermark
- * @param 图片对应文件及图片删除  方法 delImgDir
+ * @param 图片对应文件及图片删除     方法 delImgDir
  */
-class Upload
+class UplodeImg extends Component
 {
     public $dir;            // 附件存放物理目录
     public $time;           // 自定义文件上传时间
@@ -35,7 +38,7 @@ class Upload
      * @param string $field     上传控件名称
      * @param string $time      自定义上传时间
      */
-    public function upload($types = 'jpg|png', $maxsize = 1024, $field = 'file', $time = '')
+    public function upload($field = 'file',$maxsize = 1024,$types = 'jpg|png', $time = '')
     {
         $this->allow_types = explode('|', $types);
         $this->maxsize = $maxsize * 1024;
@@ -93,18 +96,18 @@ class Upload
     }
 
     /**
-     * @param 其中：name 为文件名，上传成功时是上传到服务器上的文件名，上传失败则是本地的文件名
-     *              dir  为服务器上存放该附件的物理路径，上传失败不存在该值
-     *              size 为附件大小，上传失败不存在该值
-     *              msg 为状态标识，1表示成功，-1表示文件类型不允许，-2表示文件大小超出
-     * @return array   执行文件上传，处理完返回一个包含上传成功或失败的文件信息数组，
+     * @param 其中： name    为文件名，上传成功时是上传到服务器上的文件名，上传失败则是本地的文件名
+     *              dir     为服务器上存放该附件的物理路径，上传失败不存在该值
+     *              size    为附件大小，上传失败不存在该值
+     *              msg     为状态标识，1表示成功，-1表示文件类型不允许，-2表示文件大小超出
+     * @return      array   执行文件上传，处理完返回一个包含上传成功或失败的文件信息数组，
      */
-    public function execute()
+    public function execute($files)
     {
-        $files = array(); //成功上传的文件信息
+        $filesArr = array(); //成功上传的文件信息
         $field = $this->field;
-        $keys = $_FILES[$field];
-        foreach ($keys as $key) {
+
+        foreach ($files as $key) {
             if (!$_FILES[$field]['name'] == $key) continue;
             $fileext = $this->fileext($_FILES[$field]['name']); //获取文件扩展名
             $filename = date('Ymdhis', $this->time) . mt_rand(10, 99) . '.' . $fileext; //生成文件名
@@ -113,45 +116,45 @@ class Upload
 
             //文件类型不允许
             if (!in_array($fileext, $this->allow_types)) {
-                $files['name'] = $_FILES[$field]['name'];
-                $files['msg'] = -1;
+                $filesArr['name'] = $_FILES[$field]['name'];
+                $filesArr['msg'] = -1;
                 continue;
             }
 
             //文件大小超出
             if ($filesize > $this->maxsize) {
-                $files['name'] = $_FILES[$field]['name'];
-                $files['name'] = $filesize;
-                $files['msg'] = -2;
+                $filesArr['name'] = $_FILES[$field]['name'];
+                $filesArr['name'] = $filesize;
+                $filesArr['msg'] = -2;
                 continue;
             }
 
-            $files['name'] = $filename;
-            $files['dir'] = $filedir;
-            $files['size'] = $filesize;
+            $filesArr['name'] = $filename;
+            $filesArr['dir'] = $filedir;
+            $filesArr['size'] = $filesize;
 
             //保存上传文件并删除临时文件
             if (is_uploaded_file($_FILES[$field]['tmp_name'])) {
                 move_uploaded_file($_FILES[$field]['tmp_name'], $filedir . $filename);
                 @unlink($_FILES[$field]['tmp_name']);
-                $files['msg'] = 1;
+                $filesArr['msg'] = 1;
 
                 //对图片进行加水印和生成缩略图,这里演示只支持jpg和png(gif生成的话会没了帧的)
                 if (in_array($fileext, array('jpg', 'png'))) {
                     if ($this->big_width) {
                         if ($this->createThumb($filedir . $filename, $filedir . 'big_' . $filename,$this->big_width,$this->big_height)) {
-                            $files['big'] = 'big_' . $filename;  // 大缩略图文件名
+                            $filesArr['big'] = 'big_' . $filename;  // 大缩略图文件名
                         }
                     }
 
                     if ($this->middle_width) {
                         if ($this->createThumb($filedir . $filename, $filedir . 'middle_' . $filename,$this->middle_width,$this->middle_height)) {
-                            $files['middle'] = 'middle_' . $filename;  // 中缩略图文件名
+                            $filesArr['middle'] = 'middle_' . $filename;  // 中缩略图文件名
                         }
                     }
                     if ($this->small_width) {
                         if ($this->createThumb($filedir . $filename, $filedir . 'small_' . $filename,$this->small_width,$this->small_height)) {
-                            $files['small'] = 'small_' . $filename;  // 小缩略图文件名
+                            $filesArr['small'] = 'small_' . $filename;  // 小缩略图文件名
                         }
                     }
 
@@ -159,7 +162,8 @@ class Upload
                 }
             }
         }
-        return $files;
+        echo "<pre>";
+        return $filesArr;
     }
 
     /**
@@ -352,5 +356,22 @@ class Upload
                 closedir($handle);
             }
         }
+    }
+
+    /**
+     * @param 执行上传图片方法
+     * @param $field    控件名称
+     * @param $path     地址
+     * @param $files    上传资源
+     * @param width     图片宽
+     * @param height    图片高
+     * @return array    返回资源结果
+     */
+    public function uplodeImgExecute($field,$path,$files,$big_width = 0, $big_height = 0, $middle_width = 0, $middle_height = 0, $small_width = 0, $small_height = 0)
+    {
+        $this->upload($field);
+        $this->setDir($path);
+        $this->setThumb($big_width, $big_height, $middle_width, $middle_height, $small_width, $small_height);
+        return $this->execute($files);
     }
 }
